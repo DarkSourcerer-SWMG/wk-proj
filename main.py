@@ -2,8 +2,8 @@ import cv2
 import os
 import numpy as np
 
-# --- 1. KONFIGURACJA ŚCIEŻEK (Bartosz Zając) ---
-FOLDER_PATH = r"C:\Users\Barto\Desktop\semestr 6\wk\projekt\Crowd_PETS09\S2\L1\Time_12-34\View_001"
+# --- 1. KONFIGURACJA ŚCIEŻEK  ---
+FOLDER_PATH = r"Crowd_PETS09\S2\L1\Time_12-34\View_001"
 
 def load_dataset(path):
     if not os.path.exists(path):
@@ -12,7 +12,7 @@ def load_dataset(path):
     images = sorted([img for img in os.listdir(path) if img.endswith((".jpg", ".png"))])
     return images
 
-# --- 2. KONFIGURACJA BRAMKI PIONOWEJ (Bartłomiej Sitek & Miłosz Hart) ---
+# --- 2. KONFIGURACJA BRAMKI PIONOWEJ  ---
 LINE_X = 150        # Położenie pionowej linii (150 pikseli od lewej edge)
 LINE_Y_MIN = 0    # Górna granica linii (poczatek chodnika w oddali)
 LINE_Y_MAX = 560    # Dolna granica linii (blisko dolnej krawędzi)
@@ -23,7 +23,7 @@ counted_ids = set()   # Zbiór ID już policzonych
 tracked_objects = {}  # Aktywne obiekty {id: (cx, cy)}
 next_id = 0
 
-# --- 3. DETEKCJA (Gabriel Solarz) ---
+# --- 3. DETEKCJA  ---
 fgbg = cv2.createBackgroundSubtractorMOG2(history=500, varThreshold=50, detectShadows=True)
 
 image_list = load_dataset(FOLDER_PATH)
@@ -36,11 +36,11 @@ for img_name in image_list:
     if frame is None:
         continue
 
-    # --- KROK 1: PREPROCESSING (Bartosz Zając) ---
+    # --- KROK 1: PREPROCESSING  ---
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     blur = cv2.GaussianBlur(gray, (5, 5), 0)
 
-    # --- KROK 2: DETEKCJA (Gabriel Solarz) ---
+    # --- KROK 2: DETEKCJA  ---
     mask = fgbg.apply(blur)
     _, mask = cv2.threshold(mask, 250, 255, cv2.THRESH_BINARY) # Usuwanie cieni
     
@@ -59,7 +59,7 @@ for img_name in image_list:
             cy = int(y + h / 2)
             current_centroids.append((cx, cy, x, y, w, h))
 
-    # --- KROK 3: TRACKING (Miłosz Hart) ---
+    # --- KROK 3: TRACKING  ---
     new_tracked_objects = {}
     for (cx, cy, x, y, w, h) in current_centroids:
         closest_id = None
@@ -80,7 +80,7 @@ for img_name in image_list:
         
         new_tracked_objects[obj_id] = (cx, cy)
 
-        # --- KROK 4: LOGIKA BRAMKI PIONOWEJ (Bartłomiej Sitek) ---
+        # --- KROK 4: LOGIKA BRAMKI PIONOWEJ  ---
         if obj_id not in counted_ids:
             # Sprawdzamy czy środek X jest blisko linii ORAZ czy Y jest w zakresie chodnika
             if abs(cx - LINE_X) < OFFSET and LINE_Y_MIN < cy < LINE_Y_MAX:
@@ -94,7 +94,7 @@ for img_name in image_list:
 
     tracked_objects = new_tracked_objects
 
-    # --- KROK 5: WIZUALIZACJA (Interfejs Bartłomieja) ---
+    # --- KROK 5: WIZUALIZACJA  ---
     # Rysowanie niebieskiej bramki pionowej
     cv2.line(frame, (LINE_X, LINE_Y_MIN), (LINE_X, LINE_Y_MAX), (255, 0, 0), 3)
     
